@@ -1,3 +1,5 @@
+import sqlite3
+
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
@@ -13,6 +15,24 @@ def assessment():
 @app.route('/questionnaire')
 def questionnaire():
     return render_template('questionnaire.html')
+
+@app.route('/history')
+def history():
+
+    conn = sqlite3.connect('wellness.db')
+
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM assessments")
+
+    records = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        'history.html',
+        records=records
+    )
 
 
 @app.route('/analyze', methods=['POST'])
@@ -133,6 +153,31 @@ def analyze():
     }
 
     dominant_dosha = max(doshas, key=doshas.get)
+    
+    conn = sqlite3.connect('wellness.db')
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+                   INSERT INTO assessments
+                   (name, age, gender, vata, pitta, kapha,
+                    wellness, dominant_dosha)
+
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    ( 
+                        request.form.get("name"),
+                        request.form.get("age"),
+                        request.form.get("gender"),
+                        vata,
+                        pitta,
+                        kapha,
+                        wellness,
+                        dominant_dosha
+                    ))
+
+    conn.commit()
+    conn.close()
 
 
     # -------------------------
