@@ -12,9 +12,19 @@ def home():
 def assessment():
     return render_template('assessment.html')
 
-@app.route('/questionnaire')
+@app.route('/questionnaire', methods=['POST'])
 def questionnaire():
-    return render_template('questionnaire.html')
+
+    name = request.form.get("name")
+    age = request.form.get("age")
+    gender = request.form.get("gender")
+
+    return render_template(
+        'questionnaire.html',
+        name=name,
+        age=age,
+        gender=gender
+    )
 
 @app.route('/history')
 def history():
