@@ -26,25 +26,6 @@ def questionnaire():
         gender=gender
     )
 
-@app.route('/history')
-def history():
-
-    conn = sqlite3.connect('wellness.db')
-
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM assessments")
-
-    records = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        'history.html',
-        records=records
-    )
-
-
 @app.route('/analyze', methods=['POST'])
 def analyze():
 
@@ -63,8 +44,16 @@ def analyze():
 
     answers = {}
 
-    for key in request.form:
-        answers[key] = int(request.form[key])
+    answers = {}
+    
+    question_keys = [
+        'p1','p2','p3','p4','p5','p6','p7','p8','p9','p10',
+        'v11','v12','v13','v14','v15','v16','v17','v18','v19','v20',
+        'n21','n22','n23','n24','n25','n26','n27','n28','n29','n30'
+    ]
+    
+    for key in question_keys:
+        answers[key] = int(request.form.get(key, 0))
 
     # -------------------------
     # VATA CALCULATION
@@ -231,6 +220,25 @@ def analyze():
         dominant_dosha=dominant_dosha,
         recommendation=recommendation
     )
+
+@app.route('/history')
+def history():
+
+    conn = sqlite3.connect('wellness.db')
+
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM assessments")
+
+    records = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        'history.html',
+        records=records
+    )
+
 
 if __name__ == '__main__':
     app.run(debug=True) 
