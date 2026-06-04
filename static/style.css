@@ -22,6 +22,12 @@ header h1{
     margin-bottom:10px;
 }
 
+.container{
+    width:90%;
+    max-width:1000px;
+    margin:30px auto;
+}
+
 .hero{
     text-align:center;
     padding:60px 20px;
@@ -98,4 +104,69 @@ footer{
     text-align:center;
     padding:15px;
     margin-top:30px;
+}
+
+footer p{
+    margin:5px 0;
+} 
+
+nav{
+    background:#2e7d32;
+    padding:15px;
+    text-align:center;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+    margin:5px 10px;
+    display:inline-block;
+    font-weight:bold;
+}
+
+nav a:hover{
+    text-decoration:underline;
+}
+.logo{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+@media (max-width: 768px){
+
+    .container{
+        width:95%;
+        padding:15px;
+    }
+
+    h1{
+        font-size:24px;
+    }
+
+    h2{
+        font-size:20px;
+    }
+
+    .steps{
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .step{
+        width:100%;
+        margin-bottom:15px;
+    }
+
+    nav a{
+        display:block;
+        margin:10px 0;
+    }
+
+}
+
+.project-logo{
+    width: 180px;
+     margin:20px auto;
+    max-width:80%;
+    display:block;
 }
