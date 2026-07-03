@@ -1,7 +1,7 @@
 import sqlite3
 import random
 
-from flask import Flask, render_template, request, session, send_file
+from flask import Flask, render_template, request, session, send_file, redirect, url_for
 from reportlab.pdfgen import canvas
 import io
 
@@ -355,7 +355,7 @@ def download_pdf():
     # Logo
     try:
         pdf.drawImage(
-            "static/logo.png",
+            "static/image.jpeg",
             30,
             770,
             width=55,
@@ -494,10 +494,14 @@ def download_pdf():
 
     recommendations = session.get("recommendation")
 
-    if recommendations:
-        for item in recommendations:
-            pdf.drawString(60,y,u"\u2022 "+item)
-            y -= 18
+    y = 280
+    
+    for item in recommendations:
+        
+        pdf.drawString(60,y,u"\u2022 " + item
+        )
+        
+        y -= 18
 
     # --------------------------------------------------
     # DISCLAIMER
@@ -544,7 +548,7 @@ def download_pdf():
     pdf.drawCentredString(
         297,
         65,
-        "Department of Computer Science & Engineering"
+        "Department of Electronics and Computer Engineering"
     )
 
     pdf.drawCentredString(
@@ -556,7 +560,7 @@ def download_pdf():
     pdf.drawCentredString(
         297,
         39,
-        "Academic Year : 2026–27"
+        "Academic Year : 2025–29"
     )
 
     pdf.save()
@@ -573,14 +577,13 @@ def download_pdf():
 @app.route('/history')
 def history():
 
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
     conn = sqlite3.connect('wellness.db')
-
     cursor = conn.cursor()
-
     cursor.execute("SELECT * FROM assessments")
-
     records = cursor.fetchall()
-
     conn.close()
 
     return render_template(
@@ -594,7 +597,31 @@ def about():
 
 @app.route('/iot')
 def iot():
+
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
     return render_template('iot.html')
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+
+    if request.method == 'POST':
+
+        password = request.form.get('password')
+
+        if password == "organizer123":     # change password here
+            session['admin'] = True
+            return redirect(url_for('history'))
+
+    return render_template('admin.html')
+
+@app.route('/logout')
+def logout():
+
+    session.pop('admin', None)
+
+    return redirect('/')
 
 if __name__ == '__main__':
     app.run(debug=True) 
