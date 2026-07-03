@@ -5,6 +5,9 @@ from flask import Flask, render_template, request, session, send_file
 from reportlab.pdfgen import canvas
 import io
 
+from reportlab.lib import colors
+from datetime import datetime
+
 app = Flask(__name__)
 
 app.secret_key = "ayurveda_project_key"
@@ -336,54 +339,225 @@ def analyze():
 
 
 @app.route('/download_pdf')
-def download_report():
+def download_pdf():
 
     buffer = io.BytesIO()
 
     pdf = canvas.Canvas(buffer)
 
-    pdf.drawString(100, 800, "Wellness Assessment Report")
+    # --------------------------------------------------
+    # HEADER
+    # --------------------------------------------------
 
-    pdf.drawString(100, 770, f"Name: {session.get('name')}")
-    pdf.drawString(100, 750, f"Age: {session.get('age')}")
-    pdf.drawString(100, 730, f"Gender: {session.get('gender')}")
+    pdf.setFillColor(colors.darkgreen)
+    pdf.rect(0, 760, 595, 82, fill=1)
 
-    pdf.drawString(100, 690, f"Vata Score: {session.get('vata')}")
-    pdf.drawString(100, 670, f"Pitta Score: {session.get('pitta')}")
-    pdf.drawString(100, 650, f"Kapha Score: {session.get('kapha')}")
+    # Logo
+    try:
+        pdf.drawImage(
+            "static/logo.png",
+            30,
+            770,
+            width=55,
+            height=55,
+            preserveAspectRatio=True
+        )
+    except:
+        pass
 
-    pdf.drawString(100, 610, f"Wellness Score: {session.get('wellness')}")
-    pdf.drawString(100, 590, f"Status: {session.get('wellness_status')}")
+    pdf.setFillColor(colors.white)
 
-    pdf.drawString(100, 550,
-                   f"Dominant Dosha: {session.get('dominant_dosha')}")
+    pdf.setFont("Helvetica-Bold",18)
+    pdf.drawCentredString(
+        300,
+        810,
+        "Smart Ayurvedic & Naturopathic"
+    )
 
-    pdf.drawString(100, 500,
-                   f"Heart Rate: {session.get('heart_rate')} bpm")
+    pdf.drawCentredString(
+        300,
+        788,
+        "Wellness Assessment System"
+    )
 
-    pdf.drawString(100, 480,
-                   f"Body Temperature: {session.get('body_temp')} °F")
+    pdf.setFont("Helvetica",11)
+    pdf.drawCentredString(
+        300,
+        770,
+        "Wellness Assessment Report"
+    )
 
-    pdf.drawString(100, 460,
-                   f"Sleep Hours: {session.get('sleep_hours')}")
+    # --------------------------------------------------
+    # DATE
+    # --------------------------------------------------
 
-    pdf.drawString(100, 440,
-                   f"Daily Steps: {session.get('steps')}")
-    
-    pdf.drawString(100, 420,
-                   f"Hydration Status: {session.get('hydration')}")
+    pdf.setFillColor(colors.black)
 
-    pdf.drawString(100, 390,
-                   "Sensor Insight:")
+    pdf.setFont("Helvetica",10)
 
-    pdf.drawString(120, 370,
-                   str(session.get('sensor_insight'))[:100])
+    pdf.drawRightString(
+        560,
+        745,
+        "Date : " + datetime.now().strftime("%d-%m-%Y")
+    )
 
-    pdf.drawString(100, 330,
-                   "Recommendations:")
+    # --------------------------------------------------
+    # PARTICIPANT INFORMATION
+    # --------------------------------------------------
 
-    pdf.drawString(120, 310,
-                   str(session.get('recommendation')))
+    pdf.setFillColor(colors.darkgreen)
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(40,720,"Participant Information")
+
+    pdf.setFillColor(colors.black)
+    pdf.setFont("Helvetica",11)
+
+    pdf.drawString(60,700,f"Name : {session.get('name')}")
+    pdf.drawString(60,683,f"Age : {session.get('age')}")
+    pdf.drawString(60,666,f"Gender : {session.get('gender')}")
+
+    # --------------------------------------------------
+    # ASSESSMENT RESULTS
+    # --------------------------------------------------
+
+    pdf.setFillColor(colors.darkgreen)
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(40,635,"Assessment Results")
+
+    pdf.setFillColor(colors.black)
+    pdf.setFont("Helvetica",11)
+
+    pdf.drawString(60,615,f"Dominant Dosha : {session.get('dominant_dosha')}")
+    pdf.drawString(60,598,f"Vata Score : {session.get('vata')}")
+    pdf.drawString(60,581,f"Pitta Score : {session.get('pitta')}")
+    pdf.drawString(60,564,f"Kapha Score : {session.get('kapha')}")
+    pdf.drawString(60,547,f"Wellness Score : {session.get('wellness')}%")
+    pdf.drawString(60,530,f"Overall Status : {session.get('wellness_status')}")
+
+    # --------------------------------------------------
+    # SENSOR READINGS
+    # --------------------------------------------------
+
+    pdf.setFillColor(colors.darkgreen)
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(40,500,"Simulated IoT Sensor Readings")
+
+    pdf.setFillColor(colors.black)
+    pdf.setFont("Helvetica",11)
+
+    pdf.drawString(60,480,f"Heart Rate : {session.get('heart_rate')} BPM")
+    pdf.drawString(60,463,f"Body Temperature : {session.get('body_temp')} °F")
+    pdf.drawString(60,446,f"Sleep Duration : {session.get('sleep_hours')} Hours")
+    pdf.drawString(60,429,f"Daily Steps : {session.get('steps')}")
+    pdf.drawString(60,412,f"Hydration Status : {session.get('hydration')}")
+
+    # --------------------------------------------------
+    # SENSOR INSIGHT
+    # --------------------------------------------------
+
+    pdf.setFillColor(colors.darkgreen)
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(40,380,"Sensor-Based Wellness Insight")
+
+    text = pdf.beginText(60,360)
+    text.setFont("Helvetica",10)
+
+    insight = session.get("sensor_insight")
+
+    if insight:
+        words = insight.split()
+        line = ""
+
+        for word in words:
+            if len(line + word) < 75:
+                line += word + " "
+            else:
+                text.textLine(line)
+                line = word + " "
+
+        text.textLine(line)
+
+    pdf.drawText(text)
+
+    # --------------------------------------------------
+    # RECOMMENDATIONS
+    # --------------------------------------------------
+
+    pdf.setFillColor(colors.darkgreen)
+    pdf.setFont("Helvetica-Bold",13)
+    pdf.drawString(40,300,"Personalized Recommendations")
+
+    pdf.setFillColor(colors.black)
+    pdf.setFont("Helvetica",10)
+
+    y = 280
+
+    recommendations = session.get("recommendation")
+
+    if recommendations:
+        for item in recommendations:
+            pdf.drawString(60,y,u"\u2022 "+item)
+            y -= 18
+
+    # --------------------------------------------------
+    # DISCLAIMER
+    # --------------------------------------------------
+
+    pdf.setFillColor(colors.red)
+
+    pdf.setFont("Helvetica-Bold",11)
+
+    pdf.drawString(40,165,"Disclaimer")
+
+    pdf.setFillColor(colors.black)
+
+    pdf.setFont("Helvetica",9)
+
+    pdf.drawString(
+        40,
+        148,
+        "This assessment is intended for educational, research and wellness purposes only."
+    )
+
+    pdf.drawString(
+        40,
+        134,
+        "It is not a substitute for professional medical advice or diagnosis."
+    )
+
+    # --------------------------------------------------
+    # FOOTER
+    # --------------------------------------------------
+
+    pdf.setStrokeColor(colors.darkgreen)
+
+    pdf.line(30,95,565,95)
+
+    pdf.setFont("Helvetica",8)
+
+    pdf.drawCentredString(
+        297,
+        78,
+        "Developed by Khushali Shandilya"
+    )
+
+    pdf.drawCentredString(
+        297,
+        65,
+        "Department of Computer Science & Engineering"
+    )
+
+    pdf.drawCentredString(
+        297,
+        52,
+        "Dronacharya College of Engineering"
+    )
+
+    pdf.drawCentredString(
+        297,
+        39,
+        "Academic Year : 2026–27"
+    )
 
     pdf.save()
 
@@ -392,7 +566,7 @@ def download_report():
     return send_file(
         buffer,
         as_attachment=True,
-        download_name="Wellness_Report.pdf",
+        download_name="Wellness_Assessment_Report.pdf",
         mimetype="application/pdf"
     )
 
